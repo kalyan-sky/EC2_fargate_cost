@@ -1,0 +1,68 @@
+# Three small "services" that start on the default-ish Fargate size
+# (0.25vCPU 0.5GB) and where one needs ~700 MiB -> OOMKilled.
+# Requires a Fargate profile that selects namespace "fargate-cost-demo".
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: fargate-cost-demo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-service
+  namespace: fargate-cost-demo
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: transaction-service}}
+  template:
+    metadata: {labels: {app: transaction-service}}
+    spec:
+      containers:
+        - name: sla-cps-transaction-service
+          image: polinux/stress:1.0.4
+          command: ["stress"]
+          # needs ~700 MiB; limit below is 400Mi -> OOMKilled / CrashLoopBackOff
+          args: ["--vm", "1", "--vm-bytes", "700M", "--vm-hang", "0"]
+          resources:
+            requests: {cpu: 100m, memory: 200Mi}   # 200Mi + 256Mi overhead -> 0.25vCPU 0.5GB
+            limits: {memory: 400Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-service
+  namespace: fargate-cost-demo
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: account-service}}
+  template:
+    metadata: {labels: {app: account-service}}
+    spec:
+      containers:
+        - name: account-service
+          image: polinux/stress:1.0.4
+          command: ["stress"]
+          args: ["--vm", "1", "--vm-bytes", "100M", "--vm-hang", "0"]
+          resources:
+            requests: {cpu: 100m, memory: 200Mi}
+            limits: {memory: 400Mi}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: fargate-cost-demo
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: notification-service}}
+  template:
+    metadata: {labels: {app: notification-service}}
+    spec:
+      containers:
+        - name: notification-service
+          image: polinux/stress:1.0.4
+          command: ["stress"]
+          args: ["--vm", "1", "--vm-bytes", "100M", "--vm-hang", "0"]
+          resources:
+            requests: {cpu: 100m, memory: 200Mi}
+            limits: {memory: 400Mi}

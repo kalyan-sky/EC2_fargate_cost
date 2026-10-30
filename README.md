@@ -69,6 +69,8 @@ Other regions: `--region us-east-1`, or set the prices yourself with `--vcpu-pri
 
 ## Replicate the exercise end to end
 
+Full step-by-step instructions, including creating the EKS Fargate cluster: [DEPLOY.md](DEPLOY.md).
+
 `demo/oom-demo.yaml` creates three small services in namespace `fargate-cost-demo`. They start at
 0.25vCPU 0.5GB, and `transaction-service` needs ~700 MiB against a 400Mi limit, so it gets OOMKilled.
 

@@ -1,0 +1,16 @@
+# eksctl config: Fargate-only EKS cluster for the cost demo (no EC2 node groups).
+# eksctl also creates the VPC (public + private subnets, NAT gateway) and the
+# Fargate pod execution role, and moves CoreDNS onto Fargate.
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: fargate-cost-demo
+  region: ap-southeast-1
+fargateProfiles:
+  - name: fp-system
+    selectors:
+      - namespace: default
+      - namespace: kube-system
+  - name: fp-cost-demo
+    selectors:
+      - namespace: fargate-cost-demo
